@@ -36,3 +36,5 @@ obsLocation_CalPolyObs = {'lat_ddff': 35.30050499901531, 'lon_ddff': -120.659970
 
 # Observation time - local, 24 hour clock
 obs_localTime = {'hh': 22, 'mm': 00, 'ss': 00}
+
+# 
