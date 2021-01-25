@@ -70,7 +70,7 @@ target['dec_degFract'] = (
     target['dec_ddmmss'][2]/3600)
 target['dec_rad'] = math.radians(target['dec_degFract'])
 
-# Oberverer locaiton dictionary 
+# Oberverer location dictionary 
 
 # Cal Poly Observatory
 # Per https://www.google.com/maps/search/observatory/@35.3005321,-120.6599016,81m/data=!3m1!1e3?hl=en
@@ -87,7 +87,6 @@ observer['lon_rad'] = math.radians(observer['lon_degFract'])
 # TODO define this better, in particular the time format (UTC, UT, GPS?)
 obsDateTime ={'yyyy': 2021, 'mm': 4, 'date': 1, 'hh': 22, 'mm':00, 'ss':00}
 
-# day_of_year = datetime.datetime.utcnow()
 # for test; find present date
 date = datetime.date.today()
 # strip out year, week, and day
@@ -99,7 +98,6 @@ jdNow = jd2000 + (ic[0]-2000)*julainYear_ddFract + ic[1]*7 + ic[2]
 
 # Solve Local Hour Angle (LHA)
 
-# Parameters for solving for Greenwich Apparent Sidereal Time (GAST)
 # Per archived version of USNO:
 # https://web.archive.org/web/20190524114447/https://aa.usno.navy.mil/faq/docs/GAST.php
 
