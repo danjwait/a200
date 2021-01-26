@@ -83,10 +83,18 @@ observer = {
 observer['lat_rad'] = math.radians(observer['lat_degFract']) 
 observer['lon_rad'] = math.radians(observer['lon_degFract']) 
 
-# Observation time - local, 24 hour clock
+# Observation time - local, 24 hour clock "wall clock"
 # TODO define this better, in particular the time format (UTC, UT, GPS?)
-obsDateTime ={'yyyy': 2021, 'mm': 4, 'date': 1, 'hh': 22, 'mm':00, 'ss':00}
-
+obsDateTime ={'yyyy': 2021, 'mon': 4, 'dd': 1, 'hh': 22, 'mm':42, 'ss':24}
+# put requested observation date into a date object
+obsDateTime['date'] = datetime.date(obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'])
+obsDateTime['isoDate'] = obsDateTime['date'].isocalendar()
+obsDateTime['jdObservation'] = (
+    jd2000 + 
+    (obsDateTime['isoDate'][0]-2000)*julainYear_ddFract + 
+    obsDateTime['isoDate'][1]*7 + 
+    obsDateTime['isoDate'][2]
+    )
 # for test; find present date
 date = datetime.date.today()
 # strip out year, week, and day
