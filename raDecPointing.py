@@ -84,8 +84,13 @@ observer['lon_rad'] = math.radians(observer['lon_degFract'])
 
 # Observation time % date: UTC
 obsDateTime ={'yyyy': 2021, 'mon': 4, 'dd': 1, 'hh': 6, 'mm':42, 'ss':24}
-# put requested observation date into a date object
+# put requested observation date into date and datetime objects
 obsDateTime['date'] = datetime.date(obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'])
+obsDateTime['dateTime'] = datetime.datetime(
+    obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'],
+    obsDateTime['hh'],obsDateTime['mm'],obsDateTime['ss'],
+    0,tzinfo=datetime.timezone.utc
+    )
 obsDateTime['isoDate'] = obsDateTime['date'].isocalendar()
 # TODO fix this per https://en.wikipedia.org/wiki/Julian_day#Julian_day_number_calculation
 obsDateTime['jdObservation'] = (
@@ -184,6 +189,10 @@ el_rad = math.atan(
 el_deg = math.degrees(el_rad)
 
 ### Mk I: Display Outputs ###
-print('At ' + observer['observatory'] + ' the target ' + target['name'] + ' will be positioned at:')
+print(
+    'From ' + observer['observatory'] + 
+    ' at ' + str(obsDateTime['dateTime'])+ ' UTC, the target ' +
+    target['name'] + ' will be positioned at:'
+ )
 print(f'azimuth: {az_deg:.3f} degrees')
 print(f'elevation: {el_deg:.3f} degrees')
