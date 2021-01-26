@@ -37,11 +37,10 @@ else:
 
 ### Constants & Parameters ###
 
-# J2000 epoch: 1 January 2000, 12:00 UTC 
+# J2000 epoch: 1 January 2000, 12:00 UT
 jd_J2000 = 2451545.0
-# take off the 12:00 hours from J2000 epoch for nutation and precession calculations
-jd2000 = jd_J2000 - 0.5
 julainYear_ddFract = 365.35
+leapSeconds_sec = 37 # TAI is ahead of UTC by this amount)
 
 ###  Input observation values values ###
 
@@ -83,24 +82,18 @@ observer = {
 observer['lat_rad'] = math.radians(observer['lat_degFract']) 
 observer['lon_rad'] = math.radians(observer['lon_degFract']) 
 
-# Observation time - local, 24 hour clock "wall clock"
-# TODO define this better, in particular the time format (UTC, UT, GPS?)
-obsDateTime ={'yyyy': 2021, 'mon': 4, 'dd': 1, 'hh': 22, 'mm':42, 'ss':24}
+# Observation time % date: UTC
+obsDateTime ={'yyyy': 2021, 'mon': 4, 'dd': 1, 'hh': 6, 'mm':42, 'ss':24}
 # put requested observation date into a date object
 obsDateTime['date'] = datetime.date(obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'])
 obsDateTime['isoDate'] = obsDateTime['date'].isocalendar()
+# TODO fix this per https://en.wikipedia.org/wiki/Julian_day#Julian_day_number_calculation
 obsDateTime['jdObservation'] = (
-    jd2000 + 
+    jd_J2000 + 
     (obsDateTime['isoDate'][0]-2000)*julainYear_ddFract + 
     obsDateTime['isoDate'][1]*7 + 
     obsDateTime['isoDate'][2]
     )
-# for test; find present date
-date = datetime.date.today()
-# strip out year, week, and day
-ic = date.isocalendar()
-# convert today to julian date
-jdNow = jd2000 + (ic[0]-2000)*julainYear_ddFract + ic[1]*7 + ic[2]
 
 ### Solve for Azimuth and Elevation in NED for Target at Observer ###
 
@@ -110,10 +103,15 @@ jdNow = jd2000 + (ic[0]-2000)*julainYear_ddFract + ic[1]*7 + ic[2]
 # https://web.archive.org/web/20190524114447/https://aa.usno.navy.mil/faq/docs/GAST.php
 
 # Julian date of the previous midnight (0h) UT (value of JD0 will end in .5 exactly)
-jd0 = 2459250.5 # hardcode for now TODO link to obsDateTime
+jd0 = obsDateTime['jdObservation']
 # hours of UT since jd0
-timeSinceUt_hh = 8.3 # hardcode for now TODO link to obsDateTime
-jd = jd0 + timeSinceUt_hh/24
+timeSinceUt_hhFract = ( 
+    obsDateTime['hh'] + 
+    obsDateTime['mm']/60 + 
+    obsDateTime['ss']/3600
+    
+    )
+jd = jd0 + timeSinceUt_hhFract/24
 
 D = jd - 2451545.0
 D0 = jd0 - 2451545.0
@@ -125,7 +123,7 @@ T = D/36525
 GMST_hh = (
     6.697374558 +
     0.06570982441908 * D0 + 
-    1.00273790935 * timeSinceUt_hh + 
+    1.00273790935 * timeSinceUt_hhFract + 
     0.000026 * T**2
     )
 
