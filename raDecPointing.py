@@ -28,7 +28,7 @@ import datetime # for date and time conversions
 import platform # for determining the platform OS
 import os # for commands to the OS
 
-### MK I: Clear the output ###
+### TODO MK I: Clear the output ###
 platformName = platform.system()
 if platformName  == 'Windows':
     os.system('cls')
@@ -40,6 +40,7 @@ else:
 ###  Input observation values ###
 
 # Target dictionary 
+# TODO define this as an interface; "target shall be specified as"
 
 # Betelgeuse 
 # Right ascension 5h 55m 10.30536s
@@ -65,6 +66,8 @@ target['dec_degFract'] = (
 target['dec_rad'] = math.radians(target['dec_degFract'])
 
 # Observer location dictionary 
+# TODO Mk II: make this something that is passed to targeting from
+# the GNC (GPS) function; "where am I?" as opposed to "you are here"
 
 # Cal Poly Observatory
 # Per https://www.google.com/maps/search/observatory/@35.3005321,-120.6599016,81m/data=!3m1!1e3?hl=en
@@ -78,6 +81,8 @@ observer['lat_rad'] = math.radians(observer['lat_degFract'])
 observer['lon_rad'] = math.radians(observer['lon_degFract']) 
 
 # Observation time & date: UTC
+# TODO define this as an interface; "obs time shall be specified as"
+# TODO allow for "observe now"
 obsDateTime ={'yyyy': 2021, 'mon': 4, 'dd': 5, 'hh': 6, 'mm':0, 'ss':0}
 # put requested observation date into date and datetime objects
 obsDateTime['date'] = datetime.date(obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'])
@@ -139,7 +144,7 @@ D0 = jd0 - 2451545.0
 # T is the number of centuries since the year 2000
 T = D/36525 
 
-# Compute Greenwich Mean Sidereal Time in hours at observation time
+# Compute Greenwich Mean Sidereal Time (GMST) in hours at observation time
 GMST_hh = (
     6.697374558 +
     0.06570982441908 * D0 + 
@@ -167,12 +172,13 @@ deltaPsi_hours = (
     0.000024 * math.sin(2*L_rad)
     )
 
+# Equation of the Equinoxes GMST to GAST, in hour angle
 eqeq_hh = deltaPsi_hours * math.cos(epsilon_rad)
 
 # Greenwich Apparent Sidereal Time, GAST, hours
 GAST_hh = GMST_hh + eqeq_hh
 
-# Local Hour Angle, degress
+# Local Hour Angle of target from observer, degress
 LHA_deg = (
     (GAST_hh - target['RA_hoursFract']) * 15 +
     observer['lon_degFract'] 
@@ -181,10 +187,11 @@ LHA_deg = (
 LHA_rad = math.radians(LHA_deg)
 
 # Transformation from Celestial Equitorial to Az/El
+# TODO check this
 # Per archived version of USNO:
 # https://web.archive.org/web/20181110011637/http://aa.usno.navy.mil/faq/docs/Alt_Az.php
 
-# shorthand variable names
+# shorthand variable names to make equations easier
 dec_rad = target['dec_rad']
 lat_rad = observer['lat_rad']
 h_rad = LHA_rad
@@ -203,7 +210,7 @@ el_rad = math.atan(
     )
 el_deg = math.degrees(el_rad)
 
-### Mk I: Display Outputs ###
+### TODO Mk I: Display Outputs ###
 print(
     'From ' + observer['observatory'] + 
     ' at ' + str(obsDateTime['dateTime'])+ ' UTC, the target ' +
