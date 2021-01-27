@@ -37,12 +37,7 @@ else:
 
 ### Constants & Parameters ###
 
-# J2000 epoch: 1 January 2000, 12:00 UT
-jd_J2000 = 2451545.0
-julainYear_ddFract = 365.35
-leapSeconds_sec = 37 # TAI is ahead of UTC by this amount)
-
-###  Input observation values values ###
+###  Input observation values ###
 
 # Target dictionary 
 
@@ -69,7 +64,7 @@ target['dec_degFract'] = (
     target['dec_ddmmss'][2]/3600)
 target['dec_rad'] = math.radians(target['dec_degFract'])
 
-# Oberverer location dictionary 
+# Observer location dictionary 
 
 # Cal Poly Observatory
 # Per https://www.google.com/maps/search/observatory/@35.3005321,-120.6599016,81m/data=!3m1!1e3?hl=en
@@ -82,8 +77,8 @@ observer = {
 observer['lat_rad'] = math.radians(observer['lat_degFract']) 
 observer['lon_rad'] = math.radians(observer['lon_degFract']) 
 
-# Observation time % date: UTC
-obsDateTime ={'yyyy': 2021, 'mon': 4, 'dd': 1, 'hh': 6, 'mm':42, 'ss':24}
+# Observation time & date: UTC
+obsDateTime ={'yyyy': 2021, 'mon': 4, 'dd': 5, 'hh': 6, 'mm':0, 'ss':0}
 # put requested observation date into date and datetime objects
 obsDateTime['date'] = datetime.date(obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'])
 obsDateTime['dateTime'] = datetime.datetime(
@@ -91,14 +86,35 @@ obsDateTime['dateTime'] = datetime.datetime(
     obsDateTime['hh'],obsDateTime['mm'],obsDateTime['ss'],
     0,tzinfo=datetime.timezone.utc
     )
-obsDateTime['isoDate'] = obsDateTime['date'].isocalendar()
-# TODO fix this per https://en.wikipedia.org/wiki/Julian_day#Julian_day_number_calculation
-obsDateTime['jdObservation'] = (
-    jd_J2000 + 
-    (obsDateTime['isoDate'][0]-2000)*julainYear_ddFract + 
-    obsDateTime['isoDate'][1]*7 + 
-    obsDateTime['isoDate'][2]
-    )
+
+# Calulate Julian Date for obsDateTime
+# Per  "Calendars," Explanatory Supplement to the Astronomical Almanac, Urban and Seidelmann
+# # Reference https://web.archive.org/web/20190430134555/https://aa.usno.navy.mil/publications/docs/c15_usb_online.pdf
+# Gregorian to Julian Day conversion parameters
+y = 4716
+j = 1401
+m = 2
+n = 12
+r = 4
+p = 1461
+q = 0
+v = 3
+u = 5
+s = 153
+t = 2
+w = 2
+A = 184
+B = 274277
+C = -38
+# Gregorian to Julian Day conversion operations
+h = obsDateTime['mon'] - m
+g = obsDateTime['yyyy'] + y - (n - h)//n
+f = ((h - 1 + n)%n)
+e = (p * g + q)//r + obsDateTime['dd'] - 1 - j
+J = e + (s * f + t)//u
+J = J - (3 * ((g + A)//100))//4 - C
+# load Julain Day into obsDateTime dictionary, with fudge for missing the half day
+obsDateTime['jdObservation'] = J - 0.5 
 
 ### Solve for Azimuth and Elevation in NED for Target at Observer ###
 
@@ -114,7 +130,6 @@ timeSinceUt_hhFract = (
     obsDateTime['hh'] + 
     obsDateTime['mm']/60 + 
     obsDateTime['ss']/3600
-    
     )
 jd = jd0 + timeSinceUt_hhFract/24
 
