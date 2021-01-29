@@ -68,6 +68,7 @@ target['dec_rad'] = math.radians(target['dec_degFract'])
 # Observer location dictionary 
 # TODO Mk II: make this something that is passed to targeting from
 # the GNC (GPS) function; "where am I?" as opposed to "you are here"
+# TODO define this as an interface; needs to be - for west longitude
 
 # Cal Poly Observatory
 # Per https://www.google.com/maps/search/observatory/@35.3005321,-120.6599016,81m/data=!3m1!1e3?hl=en
@@ -204,10 +205,14 @@ az_rad = math.asin(
 az_deg = math.degrees(az_rad)
 
 # solve for elevation in radians
-el_rad = math.atan( 
-    (-1*math.sin(h_rad)) / 
-    (math.tan(dec_rad)*math.cos(lat_rad) - math.sin(lat_rad)*math.cos(h_rad)) 
+el_rad_numerator = (-1*math.sin(h_rad))
+
+el_rad_denominator = (
+    (math.tan(dec_rad)*math.cos(lat_rad) - 
+    math.sin(lat_rad)*math.cos(h_rad))
     )
+el_rad = math.atan2( el_rad_numerator, el_rad_denominator )
+
 el_deg = math.degrees(el_rad)
 
 ### TODO Mk I: Display Outputs ###
