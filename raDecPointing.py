@@ -91,7 +91,7 @@ observer['lon_rad'] = math.radians(observer['lon_degFract'])
 # Observation time & date: UTC
 # TODO define this as an interface; "obs time shall be specified as"
 # TODO allow for "observe now"
-obsDateTime ={'yyyy': 2021, 'mon': 4, 'dd': 5, 'hh': 6, 'mm':0, 'ss':0}
+obsDateTime ={'yyyy': 2021, 'mon': 3, 'dd': 10, 'hh': 4, 'mm':0, 'ss':0}
 # put requested observation date into date and datetime objects
 obsDateTime['date'] = datetime.date(obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'])
 obsDateTime['dateTime'] = datetime.datetime(
@@ -236,13 +236,17 @@ lat_rad = observer['lat_rad']
 h_rad = LHA_rad
 
 # solve for azimuth in radians
+"""
+This is the USNO version, doesn't seem to work
 az_rad = math.asin(
     math.cos(h_rad)*math.cos(dec_rad)*math.cos(lat_rad) + 
     math.sin(dec_rad)*math.sin(lat_rad)
     )
 az_deg = math.degrees(az_rad)
-
+"""
 # solve for elevation in radians
+"""
+This is the USNO version, doesn't seen to work
 el_rad_numerator = (-1*math.sin(h_rad))
 
 el_rad_denominator = (
@@ -250,9 +254,22 @@ el_rad_denominator = (
     math.sin(lat_rad)*math.cos(h_rad))
     )
 el_rad = math.atan2( el_rad_numerator, el_rad_denominator )
+"""
+
+# Per  http://star-www.st-and.ac.uk/~fv/webnotes/chapter7.htm#:~:text=Local%20Hour%20Angle%20H%20%3D%20LST,azimuth%20A%20and%20altitude%20a.&text=This%20gives%20us%20the%20altitude%20a.
+el_rad = math.asin (
+    math.sin(dec_rad)*math.sin(lat_rad) +
+    math.cos(dec_rad)*math.cos(lat_rad)*math.cos(h_rad)
+)
 
 el_deg = math.degrees(el_rad)
 
+az_rad = math.cos(
+    (math.sin(dec_rad - math.sin(lat_rad*math.sin(el_rad))) /
+    (math.cos(lat_rad)*math.cos(el_rad)))
+)
+
+az_deg = math.degrees(az_rad)
 ### TODO Mk I: Display Outputs ###
 print(
     'From ' + observer['observatory'] + 
