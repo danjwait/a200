@@ -46,12 +46,19 @@ else:
 # Right ascension 5h 55m 10.30536s
 # Declination +07° 24′ 25.4304″
 # Per https://en.wikipedia.org/wiki/Betelgeuse
-
+"""
 target = {
     'name':'Betelgeuse',
     'RA_hhmmss': [5,55,10.30536], 
     'dec_ddmmss': [7, 24, 25.4304]
     }
+"""
+target = {
+    'name':'Polaris',
+    'RA_hhmmss': [2,56,26.4], 
+    'dec_ddmmss': [89, 21, 17.6]
+    }
+
 target['RA_hoursFract'] = (
     target['RA_hhmmss'][0] + 
     target['RA_hhmmss'][1]/60 +
@@ -119,8 +126,15 @@ f = ((h - 1 + n)%n)
 e = (p * g + q)//r + obsDateTime['dd'] - 1 - j
 J = e + (s * f + t)//u
 J = J - (3 * ((g + A)//100))//4 - C
-# load Julain Day into obsDateTime dictionary, with fudge for missing the half day
-obsDateTime['jdObservation'] = J - 0.5 
+# calculate fractional day to add to Julian Date:
+# fractional hours since 00:00:00 UTC
+fractHoursUTC = (
+    obsDateTime['hh'] + 
+    obsDateTime['mm']*60 + 
+    obsDateTime['ss']*3600 
+    )
+# add fractional day to Julain Date and load to dictionary
+obsDateTime['jdObservation'] = J + (( fractHoursUTC - 12 ) / 24 )
 
 ### Solve for Azimuth and Elevation in NED for Target at Observer ###
 
@@ -128,9 +142,15 @@ obsDateTime['jdObservation'] = J - 0.5
 
 # Per archived version of USNO:
 # https://web.archive.org/web/20190524114447/https://aa.usno.navy.mil/faq/docs/GAST.php
-
+# TODO there's an error in here somewhere on the GMST calc
 # Julian date of the previous midnight (0h) UT (value of JD0 will end in .5 exactly)
-jd0 = obsDateTime['jdObservation']
+fractHoursToMid = obsDateTime['jdObservation'] % 1
+if fractHoursToMid < 0.5:
+    deltaJDtoMidnight = fractHoursToMid + 0.5
+else:
+    deltaJDtoMidnight = fractHoursToMid - 0.5
+
+jd0 = obsDateTime['jdObservation'] - deltaJDtoMidnight
 # hours of UT since jd0
 timeSinceUt_hhFract = ( 
     obsDateTime['hh'] + 
@@ -139,6 +159,8 @@ timeSinceUt_hhFract = (
     )
 jd = jd0 + timeSinceUt_hhFract/24
 
+# number of days and fraction (+ or -) from 2000 January 1, 12h UT, 
+# # Julian date 2451545.0:
 D = jd - 2451545.0
 D0 = jd0 - 2451545.0
 
@@ -153,6 +175,11 @@ GMST_hh = (
     0.000026 * T**2
     )
 
+# Reduce GMST to within 0-24 hours
+GMST_hh = (
+    ((GMST_hh / 24) % 1 ) * 24
+    )
+
 # Solve Equation of the Equinoxes to correct GMST to GAST
 
 # epsilon is the obliquity, degress
@@ -161,10 +188,21 @@ epsilon_rad = math.radians(epsilon_deg)
 
 # L, the Mean Longitude of the Sun, degrees
 L_deg = 280.47 + 0.98565 * D
+
+# Reduce L to within 0-360 degrees
+L_deg = (
+    ((L_deg / 360) % 1 ) * 360
+    )
 L_rad = math.radians(L_deg)
 
 # omega, Longitude of the ascending node of the Moon, degrees
 omega_deg = 125.04 - 0.052954 * D
+
+# Reduce omega to within 0-360 degrees
+omega_deg = (
+    ((omega_deg / 360) % 1 ) * 360
+    )
+
 omega_rad = math.radians(omega_deg)
 
 # delta psi, nutation in longitude, in hours
