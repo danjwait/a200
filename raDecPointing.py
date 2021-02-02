@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Test of Right Ascension & Declination to LHLV Az/El pointing.
+"""Right Ascension & Declination to LHLV Az/El pointing.
 Olivia Burd, Dan Wait
 Cal Poly Aerospace Engineering
 
@@ -36,29 +36,35 @@ else:
     os.system('clear')
 
 ### Constants & Parameters ###
+# None
 
 ###  Input observation values ###
 
 # Target dictionary 
 # TODO define this as an interface; "target shall be specified as"
 
-# Betelgeuse 
-# Right ascension 5h 55m 10.30536s
-# Declination +07° 24′ 25.4304″
-# Per https://en.wikipedia.org/wiki/Betelgeuse
-"""
+# Using Stellarium target RA/Dec Values: https://stellarium-web.org/
+
 target = {
     'name':'Betelgeuse',
-    'RA_hhmmss': [5,55,10.30536], 
-    'dec_ddmmss': [7, 24, 25.4304]
+    'RA_hhmmss': [5,56,18.4], 
+    'dec_ddmmss': [7, 24, 30.4]
     }
 """
 target = {
     'name':'Polaris',
-    'RA_hhmmss': [2,56,26.4], 
-    'dec_ddmmss': [89, 21, 17.6]
+    'RA_hhmmss': [2,57,00.7], 
+    'dec_ddmmss': [89, 21, 23.9]
     }
-
+"""
+"""
+target = {
+    'name':'Arcturus',
+    'RA_hhmmss': [14,16,40.1], 
+    'dec_ddmmss': [19, 5, 13.6]
+    }
+"""
+# Convert input target parameters to as-used in code
 target['RA_hoursFract'] = (
     target['RA_hhmmss'][0] + 
     target['RA_hhmmss'][1]/60 +
@@ -73,9 +79,9 @@ target['dec_degFract'] = (
 target['dec_rad'] = math.radians(target['dec_degFract'])
 
 # Observer location dictionary 
+# TODO define this as an interface; needs to be - for west longitude
 # TODO Mk II: make this something that is passed to targeting from
 # the GNC (GPS) function; "where am I?" as opposed to "you are here"
-# TODO define this as an interface; needs to be - for west longitude
 
 # Cal Poly Observatory
 # Per https://www.google.com/maps/search/observatory/@35.3005321,-120.6599016,81m/data=!3m1!1e3?hl=en
@@ -91,6 +97,7 @@ observer['lon_rad'] = math.radians(observer['lon_degFract'])
 # Observation time & date: UTC
 # TODO define this as an interface; "obs time shall be specified as"
 # TODO allow for "observe now"
+
 obsDateTime ={'yyyy': 2021, 'mon': 3, 'dd': 10, 'hh': 4, 'mm':0, 'ss':0}
 # put requested observation date into date and datetime objects
 obsDateTime['date'] = datetime.date(obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'])
@@ -126,6 +133,7 @@ f = ((h - 1 + n)%n)
 e = (p * g + q)//r + obsDateTime['dd'] - 1 - j
 J = e + (s * f + t)//u
 J = J - (3 * ((g + A)//100))//4 - C
+
 # calculate fractional day to add to Julian Date:
 # fractional hours since 00:00:00 UTC
 fractHoursUTC = (
@@ -142,7 +150,6 @@ obsDateTime['jdObservation'] = J + (( fractHoursUTC - 12 ) / 24 )
 
 # Per archived version of USNO:
 # https://web.archive.org/web/20190524114447/https://aa.usno.navy.mil/faq/docs/GAST.php
-# TODO there's an error in here somewhere on the GMST calc
 # Julian date of the previous midnight (0h) UT (value of JD0 will end in .5 exactly)
 fractHoursToMid = obsDateTime['jdObservation'] % 1
 if fractHoursToMid < 0.5:
@@ -159,8 +166,8 @@ timeSinceUt_hhFract = (
     )
 jd = jd0 + timeSinceUt_hhFract/24
 
-# number of days and fraction (+ or -) from 2000 January 1, 12h UT, 
-# # Julian date 2451545.0:
+# number of days and fraction (+ or -) from
+# 2000 January 1, 12h UT, Julian date 2451545.0:
 D = jd - 2451545.0
 D0 = jd0 - 2451545.0
 
@@ -188,21 +195,10 @@ epsilon_rad = math.radians(epsilon_deg)
 
 # L, the Mean Longitude of the Sun, degrees
 L_deg = 280.47 + 0.98565 * D
-
-# Reduce L to within 0-360 degrees
-L_deg = (
-    ((L_deg / 360) % 1 ) * 360
-    )
 L_rad = math.radians(L_deg)
 
 # omega, Longitude of the ascending node of the Moon, degrees
 omega_deg = 125.04 - 0.052954 * D
-
-# Reduce omega to within 0-360 degrees
-omega_deg = (
-    ((omega_deg / 360) % 1 ) * 360
-    )
-
 omega_rad = math.radians(omega_deg)
 
 # delta psi, nutation in longitude, in hours
@@ -222,54 +218,51 @@ LHA_deg = (
     (GAST_hh - target['RA_hoursFract']) * 15 +
     observer['lon_degFract'] 
     )
-
 LHA_rad = math.radians(LHA_deg)
 
 # Transformation from Celestial Equitorial to Az/El
-# TODO check this
-# Per archived version of USNO:
-# https://web.archive.org/web/20181110011637/http://aa.usno.navy.mil/faq/docs/Alt_Az.php
-
 # shorthand variable names to make equations easier
 dec_rad = target['dec_rad']
 lat_rad = observer['lat_rad']
 h_rad = LHA_rad
 
-# solve for azimuth in radians
-"""
-This is the USNO version, doesn't seem to work
-az_rad = math.asin(
+# USNO version
+# Per https://web.archive.org/web/20181110011637/http://aa.usno.navy.mil/faq/docs/Alt_Az.php
+# solve for elevation in radians
+el_rad = math.asin(
     math.cos(h_rad)*math.cos(dec_rad)*math.cos(lat_rad) + 
     math.sin(dec_rad)*math.sin(lat_rad)
     )
-az_deg = math.degrees(az_rad)
-"""
-# solve for elevation in radians
-"""
-This is the USNO version, doesn't seen to work
-el_rad_numerator = (-1*math.sin(h_rad))
+el_deg = math.degrees(el_rad)
 
-el_rad_denominator = (
+# solve for azimuth in radians
+az_rad_numerator = (-1*math.sin(h_rad))
+az_rad_denominator = (
     (math.tan(dec_rad)*math.cos(lat_rad) - 
     math.sin(lat_rad)*math.cos(h_rad))
     )
-el_rad = math.atan2( el_rad_numerator, el_rad_denominator )
-"""
+az_rad = math.atan2( az_rad_numerator, az_rad_denominator )
+az_deg = math.degrees(az_rad)
 
-# Per  http://star-www.st-and.ac.uk/~fv/webnotes/chapter7.htm#:~:text=Local%20Hour%20Angle%20H%20%3D%20LST,azimuth%20A%20and%20altitude%20a.&text=This%20gives%20us%20the%20altitude%20a.
+"""
+# Positional Astronomy version
+# Per http://star-www.st-and.ac.uk/~fv/webnotes/chapter7.htm#:~:text=Local%20Hour%20Angle%20H%20%3D%20LST,azimuth%20A%20and%20altitude%20a.&text=This%20gives%20us%20the%20altitude%20a.
+# solve for elevation in radians
 el_rad = math.asin (
     math.sin(dec_rad)*math.sin(lat_rad) +
     math.cos(dec_rad)*math.cos(lat_rad)*math.cos(h_rad)
 )
-
 el_deg = math.degrees(el_rad)
 
-az_rad = math.cos(
-    (math.sin(dec_rad - math.sin(lat_rad*math.sin(el_rad))) /
-    (math.cos(lat_rad)*math.cos(el_rad)))
-)
-
+# solve for azimuth in radians
+az_rad = math.asin(
+    (-1*math.sin(h_rad)*math.cos(dec_rad) ) /
+    math.cos(el_rad)
+    )
 az_deg = math.degrees(az_rad)
+"""
+# TODO correct az units to be degrees East
+
 ### TODO Mk I: Display Outputs ###
 print(
     'From ' + observer['observatory'] + 
