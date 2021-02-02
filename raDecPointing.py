@@ -261,7 +261,9 @@ az_rad = math.asin(
     )
 az_deg = math.degrees(az_rad)
 """
-# TODO correct az units to be degrees East
+# Convert to degrees East azimuth
+if az_deg < 0:
+    az_deg = 360.0 + az_deg 
 
 ### TODO Mk I: Display Outputs ###
 print(
@@ -269,5 +271,5 @@ print(
     ' at ' + str(obsDateTime['dateTime'])+ ' UTC, the target ' +
     target['name'] + ' will be positioned at:'
  )
-print(f'azimuth: {az_deg:.3f} degrees')
+print(f'azimuth: {az_deg:.3f} degrees East')
 print(f'elevation: {el_deg:.3f} degrees')
