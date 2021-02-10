@@ -44,7 +44,7 @@ else:
 # TODO define this as an interface; "target shall be specified as"
 
 # Using Stellarium target RA/Dec Values: https://stellarium-web.org/
-
+"""
 target = {
     'name':'Betelgeuse',
     'RA_hhmmss': [5,56,18.4], 
@@ -56,7 +56,7 @@ target = {
     'RA_hhmmss': [2,57,00.7], 
     'dec_ddmmss': [89, 21, 23.9]
     }
-"""
+
 """
 target = {
     'name':'Arcturus',
@@ -98,7 +98,9 @@ observer['lon_rad'] = math.radians(observer['lon_degFract'])
 # TODO define this as an interface; "obs time shall be specified as"
 # TODO allow for "observe now"
 
-obsDateTime ={'yyyy': 2021, 'mon': 3, 'dd': 10, 'hh': 4, 'mm':0, 'ss':0}
+#obsDateTime ={'yyyy': 2021, 'mon': 3, 'dd': 10, 'hh': 4, 'mm':0, 'ss':0}
+obsDateTime ={'yyyy': 2021, 'mon': 2, 'dd': 20, 'hh': 4, 'mm':0, 'ss':0}
+
 # put requested observation date into date and datetime objects
 obsDateTime['date'] = datetime.date(obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'])
 obsDateTime['dateTime'] = datetime.datetime(
