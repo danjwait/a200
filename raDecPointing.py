@@ -46,10 +46,23 @@ else:
 # Using Stellarium target RA/Dec Values: https://stellarium-web.org/
 """
 target = {
+    'name':'Alioth',
+    'RA_hhmmss': [12, 54, 58.5],
+    'dec_ddmmss': [55, 50, 37.39]
+}
+"""
+target = {
+    'name':'Hamal',
+    'RA_hhmmss': [2, 8, 19.8],
+    'dec_ddmmss': [23, 33, 40.0]
+}
+"""
+target = {
     'name':'Betelgeuse',
     'RA_hhmmss': [5,56,18.4], 
     'dec_ddmmss': [7, 24, 30.4]
     }
+"""
 """
 target = {
     'name':'Polaris',
@@ -57,6 +70,7 @@ target = {
     'dec_ddmmss': [89, 21, 23.9]
     }
 
+"""
 """
 target = {
     'name':'Arcturus',
@@ -99,7 +113,7 @@ observer['lon_rad'] = math.radians(observer['lon_degFract'])
 # TODO allow for "observe now"
 
 #obsDateTime ={'yyyy': 2021, 'mon': 3, 'dd': 10, 'hh': 4, 'mm':0, 'ss':0}
-obsDateTime ={'yyyy': 2021, 'mon': 2, 'dd': 20, 'hh': 4, 'mm':0, 'ss':0}
+obsDateTime ={'yyyy': 2021, 'mon': 3, 'dd': 14, 'hh': 4, 'mm':0, 'ss':0}
 
 # put requested observation date into date and datetime objects
 obsDateTime['date'] = datetime.date(obsDateTime['yyyy'],obsDateTime['mon'],obsDateTime['dd'])
