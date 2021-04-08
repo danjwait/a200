@@ -60,7 +60,7 @@ marsEphemDict = {
     }
 
 # read in data file as numpy array here
-marsEphemDict["emphemerisArray"] = np.loadtxt("marsShort.txt")
+marsEphemDict["emphemerisArray"] = np.loadtxt("./marsShort.txt", delimiter = ",", usecols=(1))
 
 # setup for curve fitting
 marsEphemDict["timeSpan"] = marsEphemDict["endJD"]- marsEphemDict["startJD"]
