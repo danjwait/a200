@@ -77,7 +77,7 @@ marsEphemDict = {
 # remove file header and footer, to file of just rows of vectors
 # read in the data file of ephemieris vectors for generating as numpy array here
 # assume JPL HORIZONS Type 1 vector file of JD, X, Y, Z where X,Y,Z are in AU
-marsEphemDict["emphemerisArray"] = np.loadtxt("./marsShorter.txt", delimiter=',', usecols=(0,2,3,4), converters={1: str})
+marsEphemDict["emphemerisArray"] = np.loadtxt("./marsShorter.txt", delimiter=',', usecols=(0,2,3,4))
 
 # setup for curve fitting by figuring out the time span of data in the file
 # start of file time span
@@ -91,8 +91,6 @@ marsEphemDict["timeSpan"] = marsEphemDict["endJD"]- marsEphemDict["startJD"]
 
 # check to see how the time span of the vector file compares to the orbtial period
 marsEphemDict["orbitalPeriodFraction"] = marsEphemDict["timeSpan"]/marsEphemDict["orbitalPeriod_days"]
-
-#print(marsEphemDict["emphemerisArray"][:,0])
 
 # create a set of X, Y, Z curve fit equations based on how much of an orbit is in the file
 if marsEphemDict["orbitalPeriodFraction"] < 0.5:
@@ -121,7 +119,7 @@ else:
     # file has more than 1/2 on orbital period, use sine fit
     marsEphemDict["curveFitType"] = "sine"
 
-    pass # pass for now
+    # pass # pass for now
 
     # X position equation as a function of JD, sine function fit
     marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = optimize.curve_fit(
@@ -175,8 +173,11 @@ if marsEphemDict["curveFitType"] == "poly":
     testZ = poly_func(testJD, C4, C3, C2, C1, C0)
 
 elif marsEphemDict["curveFitType"] == "sine":
-    pass # pass for now
-    testX = sin_func(x, A, B, C)
+    # pass # pass for now
+    A = marsEphemDict["Xparams"][0]
+    B = marsEphemDict["Xparams"][1]
+    C = marsEphemDict["Xparams"][2]
+    testX = sin_func(testJD, A, B, C)
 
 else:
     pass # pass for now
@@ -184,8 +185,8 @@ else:
 print("X coefficents are: ", marsEphemDict["Xparams"])
 print("test julian date is: ", testJD)
 print("X position values at test JD is (in AU): ", testX)
-print("Y position values at test JD is (in AU): ", testY)
-print("Z position values at test JD is (in AU): ", testZ)
+#print("Y position values at test JD is (in AU): ", testY)
+#print("Z position values at test JD is (in AU): ", testZ)
 
 # TODO Convert X, Y, Z vectors to RA/Dec, then feen to Olivia's RA/Dec to Az/El solver
 
