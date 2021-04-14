@@ -37,11 +37,11 @@ else:
 
 ### Definitions ###
 
-# 4th order polynomial definition for curve fit
+# 4th order polynomial equation definition for curve fit
 def poly_func(x, C4, C3, C2, C1, C0):
     return C4*(x**4.) + C3*(x**3.) + C2*(x**2.) + C1*x + C0
 
-# sine and constant definition for curve fit
+# sine and constant equation definition for curve fit
 def sin_func(x, A, B, C):
     return A * np.sin(B * x) + C
 
@@ -151,11 +151,13 @@ testJD = marsEphemDict["startJD"] + 42.42
 
 # based on type of fit, pull out parameters and solve for X, Y, and Z at time
 if marsEphemDict["curveFitType"] == "poly":
+    # pull out parameters for the polynomial curve fit function
     C4 = marsEphemDict["Xparams"][0]
     C3 = marsEphemDict["Xparams"][1]
     C2 = marsEphemDict["Xparams"][2]
     C1 = marsEphemDict["Xparams"][3]
     C0 = marsEphemDict["Xparams"][4]
+    # send the parameters to the curve fit function
     testX = poly_func(testJD, C4, C3, C2, C1, C0)
 
     C4 = marsEphemDict["Yparams"][0]
@@ -173,24 +175,36 @@ if marsEphemDict["curveFitType"] == "poly":
     testZ = poly_func(testJD, C4, C3, C2, C1, C0)
 
 elif marsEphemDict["curveFitType"] == "sine":
-    # pass # pass for now
+    # pull out parameters for the sine curve fit function
     A = marsEphemDict["Xparams"][0]
     B = marsEphemDict["Xparams"][1]
     C = marsEphemDict["Xparams"][2]
+    # send the parameters to the curve fit function
     testX = sin_func(testJD, A, B, C)
 
-else:
-    pass # pass for now
+    A = marsEphemDict["Yparams"][0]
+    B = marsEphemDict["Yparams"][1]
+    C = marsEphemDict["Yparams"][2]
+    testY = sin_func(testJD, A, B, C)
 
+    A = marsEphemDict["Zparams"][0]
+    B = marsEphemDict["Zparams"][1]
+    C = marsEphemDict["Zparams"][2]
+    testZ = sin_func(testJD, A, B, C)
+
+else:
+    pass # pass for now, should have an error check here
+
+# Debug print statements
 print("X coefficents are: ", marsEphemDict["Xparams"])
 print("test julian date is: ", testJD)
 print("X position values at test JD is (in AU): ", testX)
-#print("Y position values at test JD is (in AU): ", testY)
-#print("Z position values at test JD is (in AU): ", testZ)
+print("Y position values at test JD is (in AU): ", testY)
+print("Z position values at test JD is (in AU): ", testZ)
 
 # TODO Convert X, Y, Z vectors to RA/Dec, then feen to Olivia's RA/Dec to Az/El solver
 
-### Dan's scratch pad of throughts ###
+### Dan's scratch pad of thoughts ###
 # read in file? of vectors vs time?
 # how to tell head and tail of vector?
 # start and stop time? time step within file?
