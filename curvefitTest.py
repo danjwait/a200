@@ -24,7 +24,7 @@ Raises:
 
 ### imports ###
 import numpy as np
-from scipy import optimize
+from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt # for debugging plotting
 import platform # for determining the platform OS
 import os # for commands to the OS
@@ -39,16 +39,20 @@ else:
 ### Definitions ###
 
 # 4th order polynomial equation definition for curve fit
-def poly4_func(x, C4, C3, C2, C1, C0):
-    return C4*(x**4.) + C3*(x**3.) + C2*(x**2.) + C1*x + C0
+def poly4_func(x, C0, C1, C2, C3, C4):
+    return C4*(x**4) + C3*(x**3) + C2*(x**2) + C1*x + C0
+
+# 3rd order polynomial equation definition for curve fit
+def poly3_func(x, C0, C1, C2, C3):
+    return  C3*(x**3) + C2*(x**2) + C1*x + C0
 
 # 2nd order polynomial equation definition for curve fit
-def poly2_func(x, C2, C1, C0):
-    return  C2*(x**2.) + C1*x + C0
+def poly2_func(x, C0, C1, C2):
+    return  C2*(x**2) + C1*x + C0
 
 # sine and constant equation definition for curve fit
-def sin_func(x, A, B, C):
-    return A * np.sin(B * x) + C
+def sin_func(x, C0, C1, C2):
+    return C2 * np.sin(C1 * x) + C0
 
 ### Constants & Parameters ###
 # Per JPL HORIZONS data files:
@@ -99,69 +103,67 @@ marsEphemDict["orbitalPeriodFraction"] = marsEphemDict["timeSpan"]/marsEphemDict
 
 # create a set of X, Y, Z curve fit equations based on how much of an orbit is in the file
 if marsEphemDict["orbitalPeriodFraction"] < 0.4:
-    # file is less than 1/2 orbital period use a 2nd order poly fit
+    # file is less than 40% orbital period use a 2nd order poly fit
     marsEphemDict["curveFitType"] = "poly2"
 
     # X position equation as a function of JD, 2nd order polyfit
-    marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = optimize.curve_fit(
+    marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = curve_fit(
         poly2_func,
         marsEphemDict["emphemerisArray"][:,0], 
         marsEphemDict["emphemerisArray"][:,1])
 
     # Y position equation as a function of JD, 2nd order polyfit
-    marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = optimize.curve_fit(
+    marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = curve_fit(
         poly2_func,
         marsEphemDict["emphemerisArray"][:,0], 
         marsEphemDict["emphemerisArray"][:,2])
 
     # Z position equation as a function of JD, 2nd order polyfit
-    marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = optimize.curve_fit(
+    marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = curve_fit(
         poly2_func,
         marsEphemDict["emphemerisArray"][:,0], 
         marsEphemDict["emphemerisArray"][:,3])
 
 elif marsEphemDict["orbitalPeriodFraction"] < 0.6:
-    # file is less than 1/2 orbital period use a 4th order poly fit
+    # file is less than 60% orbital period use a 4th order poly fit
     marsEphemDict["curveFitType"] = "poly4"
 
     # X position equation as a function of JD, 4th order polyfit
-    marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = optimize.curve_fit(
+    marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = curve_fit(
         poly4_func,
         marsEphemDict["emphemerisArray"][:,0], 
         marsEphemDict["emphemerisArray"][:,1])
 
     # Y position equation as a function of JD, 4th order polyfit
-    marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = optimize.curve_fit(
+    marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = curve_fit(
         poly4_func,
         marsEphemDict["emphemerisArray"][:,0], 
         marsEphemDict["emphemerisArray"][:,2])
 
     # Z position equation as a function of JD, 4th order polyfit
-    marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = optimize.curve_fit(
+    marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = curve_fit(
         poly4_func,
         marsEphemDict["emphemerisArray"][:,0], 
         marsEphemDict["emphemerisArray"][:,3])
 
 else:
-    # file has more than 1/2 on orbital period, use sine fit
+    # file has more than 60% of orbital period, use sine fit
     marsEphemDict["curveFitType"] = "sine"
 
-    # pass # pass for now
-
     # X position equation as a function of JD, sine function fit
-    marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = optimize.curve_fit(
+    marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = curve_fit(
         sin_func,
         marsEphemDict["emphemerisArray"][:,0], 
         marsEphemDict["emphemerisArray"][:,1])
 
     # Y position equation as a function of JD, sine function fit
-    marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = optimize.curve_fit(
+    marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = curve_fit(
         sin_func,
         marsEphemDict["emphemerisArray"][:,0], 
         marsEphemDict["emphemerisArray"][:,2])
 
     # Z position equation as a function of JD, sine function fit
-    marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = optimize.curve_fit(
+    marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = curve_fit(
         sin_func,
         marsEphemDict["emphemerisArray"][:,0], 
         marsEphemDict["emphemerisArray"][:,3])
@@ -179,63 +181,63 @@ testJD = marsEphemDict["startJD"] + 42.42
 # based on type of fit, pull out parameters and solve for X, Y, and Z at time
 if marsEphemDict["curveFitType"] == "poly2":
     # pull out parameters for the polynomial curve fit function
-    C2 = marsEphemDict["Xparams"][0]
+    C2 = marsEphemDict["Xparams"][2]
     C1 = marsEphemDict["Xparams"][1]
-    C0 = marsEphemDict["Xparams"][2]
+    C0 = marsEphemDict["Xparams"][0]
     # send the parameters to the curve fit function
-    testX = poly2_func(testJD, C2, C1, C0)
+    testX = poly2_func(testJD, C0, C1, C2)
 
-    C2 = marsEphemDict["Yparams"][0]
+    C2 = marsEphemDict["Yparams"][2]
     C1 = marsEphemDict["Yparams"][1]
-    C0 = marsEphemDict["Yparams"][2]
-    testY = poly2_func(testJD, C2, C1, C0)
+    C0 = marsEphemDict["Yparams"][0]
+    testY = poly2_func(testJD, C0, C1, C2)
 
-    C2 = marsEphemDict["Zparams"][0]
+    C2 = marsEphemDict["Zparams"][2]
     C1 = marsEphemDict["Zparams"][1]
-    C0 = marsEphemDict["Zparams"][2]
-    testZ = poly2_func(testJD, C2, C1, C0)
+    C0 = marsEphemDict["Zparams"][0]
+    testZ = poly2_func(testJD, C0, C1, C2)
 
 elif marsEphemDict["curveFitType"] == "poly4":
     # pull out parameters for the polynomial curve fit function
-    C4 = marsEphemDict["Xparams"][0]
-    C3 = marsEphemDict["Xparams"][1]
+    C4 = marsEphemDict["Xparams"][4]
+    C3 = marsEphemDict["Xparams"][3]
     C2 = marsEphemDict["Xparams"][2]
-    C1 = marsEphemDict["Xparams"][3]
-    C0 = marsEphemDict["Xparams"][4]
+    C1 = marsEphemDict["Xparams"][1]
+    C0 = marsEphemDict["Xparams"][0]
     # send the parameters to the curve fit function
-    testX = poly4_func(testJD, C4, C3, C2, C1, C0)
+    testX = poly4_func(testJD, C0, C1, C2, C3, C4)
 
-    C4 = marsEphemDict["Yparams"][0]
-    C3 = marsEphemDict["Yparams"][1]
+    C4 = marsEphemDict["Yparams"][4]
+    C3 = marsEphemDict["Yparams"][3]
     C2 = marsEphemDict["Yparams"][2]
-    C1 = marsEphemDict["Yparams"][3]
-    C0 = marsEphemDict["Yparams"][4]
-    testY = poly4_func(testJD, C4, C3, C2, C1, C0)
+    C1 = marsEphemDict["Yparams"][1]
+    C0 = marsEphemDict["Yparams"][0]
+    testY = poly4_func(testJD, C0, C1, C2, C3, C4)
 
-    C4 = marsEphemDict["Zparams"][0]
-    C3 = marsEphemDict["Zparams"][1]
+    C4 = marsEphemDict["Zparams"][4]
+    C3 = marsEphemDict["Zparams"][3]
     C2 = marsEphemDict["Zparams"][2]
-    C1 = marsEphemDict["Zparams"][3]
-    C0 = marsEphemDict["Zparams"][4]
-    testZ = poly4_func(testJD, C4, C3, C2, C1, C0)
+    C1 = marsEphemDict["Zparams"][1]
+    C0 = marsEphemDict["Zparams"][0]
+    testZ = poly4_func(testJD, C0, C1, C2, C3, C4)
 
 elif marsEphemDict["curveFitType"] == "sine":
     # pull out parameters for the sine curve fit function
-    A = marsEphemDict["Xparams"][0]
-    B = marsEphemDict["Xparams"][1]
-    C = marsEphemDict["Xparams"][2]
+    C0 = marsEphemDict["Xparams"][0]
+    C1 = marsEphemDict["Xparams"][1]
+    C2 = marsEphemDict["Xparams"][2]
     # send the parameters to the curve fit function
-    testX = sin_func(testJD, A, B, C)
+    testX = sin_func(testJD, C0, C1, C2)
 
-    A = marsEphemDict["Yparams"][0]
-    B = marsEphemDict["Yparams"][1]
-    C = marsEphemDict["Yparams"][2]
-    testY = sin_func(testJD, A, B, C)
+    C0 = marsEphemDict["Yparams"][0]
+    C1 = marsEphemDict["Yparams"][1]
+    C2 = marsEphemDict["Yparams"][2]
+    testY = sin_func(testJD, C0, C1, C2)
 
-    A = marsEphemDict["Zparams"][0]
-    B = marsEphemDict["Zparams"][1]
-    C = marsEphemDict["Zparams"][2]
-    testZ = sin_func(testJD, A, B, C)
+    C0 = marsEphemDict["Zparams"][0]
+    C1 = marsEphemDict["Zparams"][1]
+    C2 = marsEphemDict["Zparams"][2]
+    testZ = sin_func(testJD, C0, C1, C2)
 
 else:
     pass # pass for now, should have an error check here
@@ -243,15 +245,15 @@ else:
 # Debug plotting output
 #C4 = marsEphemDict["Xparams"][0]
 #C3 = marsEphemDict["Xparams"][1]
-C2 = marsEphemDict["Xparams"][0]
+C2 = marsEphemDict["Xparams"][2]
 C1 = marsEphemDict["Xparams"][1]
-C0 = marsEphemDict["Xparams"][2]
+C0 = marsEphemDict["Xparams"][0]
 
 numRows = len(marsEphemDict["emphemerisArray"])
 plotOfX = np.zeros(numRows)
 
 for i in range(numRows):
-    plotOfX[i]= poly2_func(marsEphemDict["emphemerisArray"][i,0], C2, C1, C0)
+    plotOfX[i]= poly2_func(marsEphemDict["emphemerisArray"][i,0], C0, C1, C2)
 
 # Debug print statements
 print("X coefficents are: ", marsEphemDict["Xparams"])
@@ -263,8 +265,7 @@ print("Z position values at test JD is (in AU): ", testZ)
 # Debug plots
 fig, ax = plt.subplots()  # Create a figure containing a single axes.
 ax.plot(marsEphemDict["emphemerisArray"][:,0], marsEphemDict["emphemerisArray"][:,1])
-#ax.plot(marsEphemDict["emphemerisArray"][:,0], plotOfX[:])
-
+ax.plot(marsEphemDict["emphemerisArray"][:,0], plotOfX[:])
 
 # TODO Convert X, Y, Z vectors to RA/Dec, then feen to Olivia's RA/Dec to Az/El solver
 
