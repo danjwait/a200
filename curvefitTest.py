@@ -37,18 +37,17 @@ else:
     os.system('clear')
 
 ### Definitions ###
-
-# 4th order polynomial equation definition for curve fit
-def poly4_func(x, C0, C1, C2, C3, C4):
-    return C4*(x**4) + C3*(x**3) + C2*(x**2) + C1*x + C0
+# 2nd order polynomial equation definition for curve fit
+def poly2_func(x, C0, C1, C2):
+    return  C2*(x**2) + C1*x + C0
 
 # 3rd order polynomial equation definition for curve fit
 def poly3_func(x, C0, C1, C2, C3):
     return  C3*(x**3) + C2*(x**2) + C1*x + C0
 
-# 2nd order polynomial equation definition for curve fit
-def poly2_func(x, C0, C1, C2):
-    return  C2*(x**2) + C1*x + C0
+# 4th order polynomial equation definition for curve fit
+def poly4_func(x, C0, C1, C2, C3, C4):
+    return C4*(x**4) + C3*(x**3) + C2*(x**2) + C1*x + C0
 
 # sine and constant equation definition for curve fit
 def sine_func(x, C0, C1, C2):
@@ -76,25 +75,26 @@ dayTosec = 86400.0 # 1 day= 86400.0 s
 # By hand, rip out material from file header and footer and put those here
 # TODO is there a better way to do this? just by hand
 
-"""
+
 marsEphemDict = {
     "head": "Mars", # from file header
     "tail": "SSB", # from file header
     "orbitalPeriod_days": 686.98 # from file header 
     }
-"""
 
+"""
 marsEphemDict = {
     "head": "Io", # from file header
     "tail": "Jupiter", # from file header
     "orbitalPeriod_days": 1.77 # from file header 
     }
-
+"""
 # TODO can have HORIZONS just dump a file with dates and vector components, no header/footer
 # remove file header and footer, to file of just rows of vectors
 # read in the data file of ephemieris vectors for generating as numpy array here
 # assume JPL HORIZONS Type 1 vector file of JD, X, Y, Z where X,Y,Z are in AU
-marsEphemDict["emphemerisArray"] = np.loadtxt("./jupiter_Io_short.txt", delimiter=',', usecols=(0,2,3,4))
+marsEphemDict["emphemerisArray"] = np.loadtxt("./marsShorter.txt", delimiter=',', usecols=(0,2,3,4))
+#marsEphemDict["emphemerisArray"] = np.loadtxt("./jupiter_Io_short.txt", delimiter=',', usecols=(0,2,3,4))
 
 # setup for curve fitting by figuring out the time span of data in the file
 # start of file time span
@@ -109,28 +109,35 @@ marsEphemDict["timeSpan"] = marsEphemDict["endJD"]- marsEphemDict["startJD"]
 # check to see how the time span of the vector file compares to the orbtial period
 marsEphemDict["orbitalPeriodFraction"] = marsEphemDict["timeSpan"]/marsEphemDict["orbitalPeriod_days"]
 
+marsEphemDict["Xave"] = np.average(marsEphemDict["emphemerisArray"][:,1])
+marsEphemDict["Yave"] = np.average(marsEphemDict["emphemerisArray"][:,2])
+marsEphemDict["Zave"] = np.average(marsEphemDict["emphemerisArray"][:,3])
+
 # create a set of X, Y, Z curve fit equations based on how much of an orbit is in the file
 if marsEphemDict["orbitalPeriodFraction"] < 0.2:
-    # file is less than 40% orbital period use a 2nd order poly fit
+    # file is less than 20% orbital period use a 2nd order poly fit
     marsEphemDict["curveFitType"] = "poly2"
 
     # X position equation as a function of JD, 2nd order polyfit
     marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = curve_fit(
         poly2_func,
         marsEphemDict["emphemerisArray"][:,0], 
-        marsEphemDict["emphemerisArray"][:,1])
+        marsEphemDict["emphemerisArray"][:,1],
+        p0=[1,1,marsEphemDict["Xave"]])
 
     # Y position equation as a function of JD, 2nd order polyfit
     marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = curve_fit(
         poly2_func,
         marsEphemDict["emphemerisArray"][:,0], 
-        marsEphemDict["emphemerisArray"][:,2])
+        marsEphemDict["emphemerisArray"][:,2],
+        p0=[1,1,marsEphemDict["Yave"]])
 
     # Z position equation as a function of JD, 2nd order polyfit
     marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = curve_fit(
         poly2_func,
         marsEphemDict["emphemerisArray"][:,0], 
-        marsEphemDict["emphemerisArray"][:,3])
+        marsEphemDict["emphemerisArray"][:,3],
+        p0=[1,1,marsEphemDict["Zave"]])
 
 elif marsEphemDict["orbitalPeriodFraction"] < 0.6:
     # file is less than 60% orbital period use a 3rd order poly fit
@@ -140,41 +147,72 @@ elif marsEphemDict["orbitalPeriodFraction"] < 0.6:
     marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = curve_fit(
         poly3_func,
         marsEphemDict["emphemerisArray"][:,0], 
-        marsEphemDict["emphemerisArray"][:,1])
+        marsEphemDict["emphemerisArray"][:,1],
+        p0=[1,1,1,marsEphemDict["Xave"]])
 
     # Y position equation as a function of JD, 3rd order polyfit
     marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = curve_fit(
         poly3_func,
         marsEphemDict["emphemerisArray"][:,0], 
-        marsEphemDict["emphemerisArray"][:,2])
+        marsEphemDict["emphemerisArray"][:,2],
+        p0=[1,1,1,marsEphemDict["Yave"]])
 
-    # Z position equation as a function of JD, 3rdh order polyfit
+    # Z position equation as a function of JD, 3rd order polyfit
     marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = curve_fit(
         poly3_func,
         marsEphemDict["emphemerisArray"][:,0], 
-        marsEphemDict["emphemerisArray"][:,3])
+        marsEphemDict["emphemerisArray"][:,3],
+        p0=[1,1,1,marsEphemDict["Zave"]])
+
+elif marsEphemDict["orbitalPeriodFraction"] < 1.0:
+    # file is less than one orbital period use a 4th order poly fit
+    marsEphemDict["curveFitType"] = "poly4"
+
+    # X position equation as a function of JD, 4th order polyfit
+    marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = curve_fit(
+        poly4_func,
+        marsEphemDict["emphemerisArray"][:,0], 
+        marsEphemDict["emphemerisArray"][:,1],
+        p0=[1,1,1,1,marsEphemDict["Xave"]])
+
+    # Y position equation as a function of JD, 4th order polyfit
+    marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = curve_fit(
+        poly4_func,
+        marsEphemDict["emphemerisArray"][:,0], 
+        marsEphemDict["emphemerisArray"][:,2],
+        p0=[1,1,1,1,marsEphemDict["Yave"]])
+
+    # Z position equation as a function of JD, 4th order polyfit
+    marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = curve_fit(
+        poly4_func,
+        marsEphemDict["emphemerisArray"][:,0], 
+        marsEphemDict["emphemerisArray"][:,3],
+        p0=[1,1,1,1,marsEphemDict["Zave"]])
 
 else:
-    # file has more than 60% of orbital period, use sine fit
+    # file has more than one orbital period, use sine fit
     marsEphemDict["curveFitType"] = "sine"
 
     # X position equation as a function of JD, sine function fit
     marsEphemDict["Xparams"], marsEphemDict["Xparams_cov"] = curve_fit(
         sine_func,
         marsEphemDict["emphemerisArray"][:,0], 
-        marsEphemDict["emphemerisArray"][:,1])
+        marsEphemDict["emphemerisArray"][:,1],
+        p0=[1,1,marsEphemDict["Xave"]])
 
     # Y position equation as a function of JD, sine function fit
     marsEphemDict["Yparams"], marsEphemDict["Yparams_cov"] = curve_fit(
         sine_func,
         marsEphemDict["emphemerisArray"][:,0], 
-        marsEphemDict["emphemerisArray"][:,2])
+        marsEphemDict["emphemerisArray"][:,2],
+        p0=[1,1,marsEphemDict["Yave"]])
 
     # Z position equation as a function of JD, sine function fit
     marsEphemDict["Zparams"], marsEphemDict["Zparams_cov"] = curve_fit(
         sine_func,
         marsEphemDict["emphemerisArray"][:,0], 
-        marsEphemDict["emphemerisArray"][:,3])
+        marsEphemDict["emphemerisArray"][:,3],
+        p0=[1,1,marsEphemDict["Zave"]])
     
 # TODO complete the vector tree for all the ephemeris files
 
@@ -206,6 +244,27 @@ if marsEphemDict["curveFitType"] == "poly2":
     C1 = marsEphemDict["Zparams"][1]
     C0 = marsEphemDict["Zparams"][0]
     testZ = poly2_func(testJD, C0, C1, C2)
+
+elif marsEphemDict["curveFitType"] == "poly3":
+    # pull out parameters for the polynomial curve fit function
+    C3 = marsEphemDict["Xparams"][3]
+    C2 = marsEphemDict["Xparams"][2]
+    C1 = marsEphemDict["Xparams"][1]
+    C0 = marsEphemDict["Xparams"][0]
+    # send the parameters to the curve fit function
+    testX = poly3_func(testJD, C0, C1, C2, C3)
+
+    C3 = marsEphemDict["Yparams"][3]
+    C2 = marsEphemDict["Yparams"][2]
+    C1 = marsEphemDict["Yparams"][1]
+    C0 = marsEphemDict["Yparams"][0]
+    testY = poly3_func(testJD, C0, C1, C2, C3)
+
+    C3 = marsEphemDict["Zparams"][3]
+    C2 = marsEphemDict["Zparams"][2]
+    C1 = marsEphemDict["Zparams"][1]
+    C0 = marsEphemDict["Zparams"][0]
+    testZ = poly3_func(testJD, C0, C1, C2, C3)
 
 elif marsEphemDict["curveFitType"] == "poly4":
     # pull out parameters for the polynomial curve fit function
