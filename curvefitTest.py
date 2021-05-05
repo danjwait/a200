@@ -49,8 +49,9 @@ def poly4_func(x, C0, C1, C2, C3, C4):
     return C4*(x**4) + C3*(x**3) + C2*(x**2) + C1*x + C0
 
 # sine and constant equation definition for curve fit
-def sine_func(x, C0, C1, C2):
-    return C2 * np.sin(C1 * x) + C0
+# https://socratic.org/questions/how-do-i-find-the-equation-of-a-sinusoidal-graph
+def sine_func(x, C0, C1, C2, C3):
+    return C3 * np.sin(C2*(C1 + x)) + C0
 
 ### Constants & Parameters ###
 # Per JPL HORIZONS data files:
@@ -82,10 +83,9 @@ ephemDict = {
     "orbitalPeriod_days": 686.98 # from file header 
     }
 
-"""
 # Flora
 ephemDict = {
-    "head": "Fora", # from file header
+    "head": "Flora", # from file header
     "tail": "SSB", # from file header
     "orbitalPeriod_days": 1193.549 # from wikipedia
     }
@@ -96,14 +96,14 @@ ephemDict = {
     "tail": "SSB", # from file header
     "orbitalPeriod_days": 4332.589 # from file header 
     }
-
+"""
 # Io
 ephemDict = {
     "head": "Io", # from file header
     "tail": "Jupiter", # from file header
     "orbitalPeriod_days": 1.77 # from file header 
     }
-
+"""
 # Saturn
 ephemDict = {
     "head": "Saturn", # from file header
@@ -117,7 +117,7 @@ ephemDict = {
     "tail": "Saturn", # from file header
     "orbitalPeriod_days": 15.945421 # from file header 
     }
-
+"""
 
 # TODO can have HORIZONS just dump a file with dates and vector components, no header/footer
 # remove file header and footer, to file of just rows of vectors
@@ -125,7 +125,8 @@ ephemDict = {
 # assume JPL HORIZONS Type 1 vector file of JD, X, Y, Z where X,Y,Z are in AU
 
 #ephemDict["emphemerisArray"] = np.loadtxt("./marsShorter.txt", delimiter=',', usecols=(0,2,3,4))
-ephemDict["emphemerisArray"] = np.loadtxt("./jupiter_Io_short.txt", delimiter=',', usecols=(0,2,3,4))
+#ephemDict["emphemerisArray"] = np.loadtxt("./flora_Short.txt", delimiter=',', usecols=(0,2,3,4))
+ephemDict["emphemerisArray"] = np.loadtxt("./jupiter_IoFine_short.txt", delimiter=',', usecols=(0,2,3,4))
 
 # setup for curve fitting by figuring out the time span of data in the file
 # start of file time span
@@ -140,9 +141,19 @@ ephemDict["timeSpan"] = ephemDict["endJD"]- ephemDict["startJD"]
 # check to see how the time span of the vector file compares to the orbtial period
 ephemDict["orbitalPeriodFraction"] = ephemDict["timeSpan"]/ephemDict["orbitalPeriod_days"]
 
+# for polynomial curve fit "first guess" parameters, find average lengths of vectors
 ephemDict["Xave"] = np.average(ephemDict["emphemerisArray"][:,1])
 ephemDict["Yave"] = np.average(ephemDict["emphemerisArray"][:,2])
 ephemDict["Zave"] = np.average(ephemDict["emphemerisArray"][:,3])
+
+# find std deviation of vectors
+ephemDict["Xstd"] = np.std(ephemDict["emphemerisArray"][:,1])
+ephemDict["Ystd"] = np.std(ephemDict["emphemerisArray"][:,2])
+ephemDict["Zstd"] = np.std(ephemDict["emphemerisArray"][:,3])
+
+# for sine fit, find JD scale factor for period
+ephemDict["periodJDscale"] = 1.0/ephemDict["orbitalPeriod_days"]
+
 
 # create a set of X, Y, Z curve fit equations based on how much of an orbit is in the file
 if ephemDict["orbitalPeriodFraction"] < 0.2:
@@ -229,21 +240,21 @@ else:
         sine_func,
         ephemDict["emphemerisArray"][:,0], 
         ephemDict["emphemerisArray"][:,1],
-        p0=[1,1,ephemDict["Xave"]])
+        p0=[0,0,ephemDict["periodJDscale"],ephemDict["Xstd"]])
 
     # Y position equation as a function of JD, sine function fit
     ephemDict["Yparams"], ephemDict["Yparams_cov"] = curve_fit(
         sine_func,
         ephemDict["emphemerisArray"][:,0], 
         ephemDict["emphemerisArray"][:,2],
-        p0=[1,1,ephemDict["Yave"]])
+        p0=[0,0,ephemDict["periodJDscale"],ephemDict["Ystd"]])
 
     # Z position equation as a function of JD, sine function fit
     ephemDict["Zparams"], ephemDict["Zparams_cov"] = curve_fit(
         sine_func,
         ephemDict["emphemerisArray"][:,0], 
         ephemDict["emphemerisArray"][:,3],
-        p0=[1,1,ephemDict["Zave"]])
+        p0=[0,0,ephemDict["periodJDscale"],ephemDict["Zstd"]])
     
 # TODO complete the vector tree for all the ephemeris files
 
@@ -323,21 +334,24 @@ elif ephemDict["curveFitType"] == "poly4":
 
 elif ephemDict["curveFitType"] == "sine":
     # pull out parameters for the sine curve fit function
-    C0 = ephemDict["Xparams"][0]
-    C1 = ephemDict["Xparams"][1]
+    C3 = ephemDict["Xparams"][3]
     C2 = ephemDict["Xparams"][2]
+    C1 = ephemDict["Xparams"][1]
+    C0 = ephemDict["Xparams"][0]
     # send the parameters to the curve fit function
-    testX = sine_func(testJD, C0, C1, C2)
-
-    C0 = ephemDict["Yparams"][0]
-    C1 = ephemDict["Yparams"][1]
-    C2 = ephemDict["Yparams"][2]
-    testY = sine_func(testJD, C0, C1, C2)
-
-    C0 = ephemDict["Zparams"][0]
-    C1 = ephemDict["Zparams"][1]
-    C2 = ephemDict["Zparams"][2]
-    testZ = sine_func(testJD, C0, C1, C2)
+    testX = sine_func(testJD, C0, C1, C2, C3)
+    
+    C3 = ephemDict["Xparams"][3]
+    C2 = ephemDict["Xparams"][2]
+    C1 = ephemDict["Xparams"][1]
+    C0 = ephemDict["Xparams"][0]
+    testY = sine_func(testJD, C0, C1, C2, C3)
+    
+    C3 = ephemDict["Xparams"][3]
+    C2 = ephemDict["Xparams"][2]
+    C1 = ephemDict["Xparams"][1]
+    C0 = ephemDict["Xparams"][0]
+    testZ = sine_func(testJD, C0, C1, C2, C3)
 
 else:
     pass # pass for now, should have an error check here
@@ -370,12 +384,13 @@ elif ephemDict["curveFitType"] == "poly4":
     for i in range(numRows):
         plotOfX[i]= poly4_func(ephemDict["emphemerisArray"][i,0], C0, C1, C2, C3, C4)
 elif ephemDict["curveFitType"] == "sine":
+    C3 = ephemDict["Xparams"][3]
     C2 = ephemDict["Xparams"][2]
     C1 = ephemDict["Xparams"][1]
     C0 = ephemDict["Xparams"][0]
     # send the parameters to the curve fit function
     for i in range(numRows):
-        plotOfX[i]= sine_func(ephemDict["emphemerisArray"][i,0], C0, C1, C2)
+        plotOfX[i]= sine_func(ephemDict["emphemerisArray"][i,0], C0, C1, C2, C3)
 
 # Debug print statements
 print("X coefficents are: ", ephemDict["Xparams"])
