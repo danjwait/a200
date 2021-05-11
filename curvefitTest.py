@@ -25,6 +25,7 @@ Raises:
 import numpy as np
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt # for debugging plotting
+import csv # for saving off the dictionary
 import platform # for determining the platform OS
 import os # for commands to the OS
 
@@ -355,6 +356,12 @@ elif ephemDict["curveFitType"] == "sine":
 
 else:
     pass # pass for now, should have an error check here
+
+### Save off output ###
+with open('savedDictionary.csv', 'w', newline='') as f:
+    writer = csv.writer(f)
+    for key, val in ephemDict.items():
+        writer.writerow([key, val])
 
 ### DEBUG ### 
 
