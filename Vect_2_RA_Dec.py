@@ -1,6 +1,4 @@
 import numpy as np # install numpy 
-from scipy import optimize # scipy for curve fitting 
-import math as mt # install math 
 
 
 # chosen Tartgets
@@ -9,7 +7,7 @@ import math as mt # install math
 # Hippocamp 
 # Flora
 
-## Vector Tree 
+## Designates i, j, k vectors from target to Earth Vector: 
 
 # Flora 
 FloraEphemDict = {
@@ -64,18 +62,16 @@ HippocampEarth_j = HippocampEphemDict["ephemerisArray_HippocampEarth"][:,2]
 HippocampEarth_k = HippocampEphemDict["ephemerisArray_HippocampEarth"][:,3]
 
 ## convert from x,y,z position vector to RA and Dec
-# Dec is tan between x and z 
+# Dec is tan between x and z (output in rad-?)
 Dec_FloraEarth = np.arctan((FloraEarth_k)/(FloraEarth_i))
 Dec_CharonEarth = np.arctan((CharonEarth_k)/(CharonEarth_i))
 Dec_TitanEarth = np.arctan((TitanEarth_k)/(TitanEarth_i))
 Dec_HippocampEarth = np.arctan((HippocampEarth_k)/(HippocampEarth_i))
 ## check these ^^
 
-# RA is tan between x and y 
+# RA is tan between x and y ( output in rad)
 RA_FloraEarth = np.arctan((FloraEarth_j)/(FloraEarth_i))
 RA_CharonEarth = np.arctan((CharonEarth_j)/(CharonEarth_i))
 Ra_TitanEarth = np.arctan((TitanEarth_j)/(TitanEarth_i))
 RA_HippocampEarth = np.arctan((HippocampEarth_j)/(HippocampEarth_i))
 
-test = np.arctan(4/3)
-print(test)
