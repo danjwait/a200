@@ -95,3 +95,13 @@ for i in range(254):
     print(RA_Phobos)
     print(Dec_Phobos)
 # returns RA and Dec in radians - need to convert to degrees and then to hours/minutes/seconds in degrees
+
+# converting to degrees
+    RA_Europa_deg = math.degrees(RA_Europa)
+    Dec_Europa_deg = math.degrees(Dec_Europa)
+    RA_Io_deg = math.degrees(RA_Io)
+    Dec_Io_deg = math.degrees(Dec_Io)
+    RA_Juno_deg = math.degrees(RA_Juno)
+    Dec_Juno_deg = math.degrees(Dec_Juno)
+    RA_Phobos_deg = math.degrees(RA_Phobos)
+    Dec_Phobos_deg = math.degress(Dec_Phobos)
