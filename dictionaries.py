@@ -93,5 +93,5 @@ for i in range(254):
     print(RA_Juno[i])
     print(Dec_Juno[i])
     print(RA_Phobos[i])
-    print(Dec_Phobos[i])
-
+    print(Dec_Phobos[i])    
+# returns RA and Dec in radians 
