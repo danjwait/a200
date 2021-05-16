@@ -57,15 +57,19 @@ Phobos_Earth_k = PhobosEphemDict["ephemerisArray_PhobosEarth"][:,3]
 ''' pull out the vectors and do the sin/cos/tan math to find the RA and Dec'''
 # RA is the tan angle between the X and Y vectors
 # Dec is the tan angle between the Z and X vectors
-RA_Europa = math.atan2((Europa_Earth_j),(Europa_Earth_i))
-Dec_Europa = math.atan2((Europa_Earth_k),(Europa_Earth_i))
 
-RA_Io = math.atan2((Io_Earth_j),(Io_Earth_i))
-Dec_Io = math.atan2((Io_Earth_k),(Io_Earth_i))
+# DJW- adding the [0] to take just the first entry of each
+# a for loop to run through all the entries in the vectors would give RA & Dec for each point
 
-RA_Juno = math.atan2((Juno_Earth_j),(Juno_Earth_i))
-Dec_Juno = math.atan2((Juno_Earth_k),(Juno_Earth_i))
+RA_Europa = math.atan2((Europa_Earth_j[0]),(Europa_Earth_i[0]))
+Dec_Europa = math.atan2((Europa_Earth_k[0]),(Europa_Earth_i[0]))
 
-RA_Phobos = math.atan2((Phobos_Earth_j),(Phobos_Earth_i))
-Dec_Phobos = math.atan2((Phobos_Earth_k),(Phobos_Earth_i))
+RA_Io = math.atan2((Io_Earth_j[0]),(Io_Earth_i[0]))
+Dec_Io = math.atan2((Io_Earth_k[0]),(Io_Earth_i[0]))
+
+RA_Juno = math.atan2((Juno_Earth_j[0]),(Juno_Earth_i[0]))
+Dec_Juno = math.atan2((Juno_Earth_k[0]),(Juno_Earth_i[0]))
+
+RA_Phobos = math.atan2((Phobos_Earth_j[0]),(Phobos_Earth_i[0]))
+Dec_Phobos = math.atan2((Phobos_Earth_k[0]),(Phobos_Earth_i[0]))
 
