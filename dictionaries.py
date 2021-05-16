@@ -94,4 +94,4 @@ for i in range(254):
     print(Dec_Juno[i])
     print(RA_Phobos[i])
     print(Dec_Phobos[i])    
-# returns RA and Dec in radians 
+# returns RA and Dec in radians - need to convert to degrees and then to hours/minutes/seconds in degrees
