@@ -61,7 +61,7 @@ Phobos_Earth_k = PhobosEphemDict["ephemerisArray_PhobosEarth"][:,3]
 # DJW- adding the [0] to take just the first entry of each
 # a for loop to run through all the entries in the vectors would give RA & Dec for each point
 
-RA_Europa = math.atan2((Europa_Earth_j[0]),(Europa_Earth_i[0]))
+'''RA_Europa = math.atan2((Europa_Earth_j[0]),(Europa_Earth_i[0]))
 Dec_Europa = math.atan2((Europa_Earth_k[0]),(Europa_Earth_i[0]))
 
 RA_Io = math.atan2((Io_Earth_j[0]),(Io_Earth_i[0]))
@@ -71,5 +71,27 @@ RA_Juno = math.atan2((Juno_Earth_j[0]),(Juno_Earth_i[0]))
 Dec_Juno = math.atan2((Juno_Earth_k[0]),(Juno_Earth_i[0]))
 
 RA_Phobos = math.atan2((Phobos_Earth_j[0]),(Phobos_Earth_i[0]))
-Dec_Phobos = math.atan2((Phobos_Earth_k[0]),(Phobos_Earth_i[0]))
+Dec_Phobos = math.atan2((Phobos_Earth_k[0]),(Phobos_Earth_i[0]))'''
+
+for i in range(254): 
+    RA_Europa = math.atan2((Europa_Earth_j[i]),(Europa_Earth_i[i]))
+    Dec_Europa = math.atan2((Europa_Earth_k[i]),(Europa_Earth_i[i]))
+
+    RA_Io = math.atan2((Io_Earth_j[i]),(Io_Earth_i[i]))
+    Dec_Io = math.atan2((Io_Earth_k[i]),(Io_Earth_i[i]))
+
+    RA_Juno = math.atan2((Juno_Earth_j[i]),(Juno_Earth_i[i]))
+    Dec_Juno = math.atan2((Juno_Earth_k[i]),(Juno_Earth_i[i]))
+
+    RA_Phobos = math.atan2((Phobos_Earth_j[i]),(Phobos_Earth_i[i]))
+    Dec_Phobos = math.atan2((Phobos_Earth_k[i]),(Phobos_Earth_i[i]))
+
+    print(RA_Europa[i])
+    print(Dec_Europa[i])
+    print(RA_Io[i])
+    print(Dec_Io[i])
+    print(RA_Juno[i])
+    print(Dec_Juno[i])
+    print(RA_Phobos[i])
+    print(Dec_Phobos[i])
 
