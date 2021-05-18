@@ -75,3 +75,16 @@ RA_CharonEarth = np.arctan((CharonEarth_j)/(CharonEarth_i))
 Ra_TitanEarth = np.arctan((TitanEarth_j)/(TitanEarth_i))
 RA_HippocampEarth = np.arctan((HippocampEarth_j)/(HippocampEarth_i))
 
+# convert Dec to Deg 
+Dec_FloraEarth_deg = np.degrees(Dec_FloraEarth)
+Dec_CharonEarth_deg = np.degrees(Dec_CharonEarth)
+Dec_TitanEarth_deg = np.degrees(Dec_TitanEarth)
+Dec_HippocampEarth_deg = np.degrees(Dec_HippocampEarth)
+
+# convert RA to deg 
+RA_FloraEarth_deg = np.degrees(RA_FloraEarth)
+RA_CharonEarth_deg = np.degrees(RA_CharonEarth)
+RA_TitanEarth_deg = np.degrees(RA_TitanEarth)
+RA_HippocampEarth_deg = np.degrees(RA_HippocampEarth)
+
+# covnert from deg to hr/min/sec in deg 
