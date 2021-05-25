@@ -425,3 +425,5 @@ plt.show()
 # maybe a dictionary w/ a numpy array for the ephemeris data?
 # Oh! what if we used time span / orbital period to determine what fit to use?
 # timeSpan / period < 0.25, use polyfit, else use sine?
+
+dansNewCode = 42 
