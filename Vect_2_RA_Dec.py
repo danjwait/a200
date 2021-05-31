@@ -115,5 +115,48 @@ RA_CharonEarth_deg = np.degrees(RA_CharonEarth)
 RA_TitanEarth_deg = np.degrees(RA_TitanEarth)
 RA_HippocampEarth_deg = np.degrees(RA_HippocampEarth)
 
+
+# Test; create components of direction cosine matrix
+# Of form cosine of <destination frame axis> to <initial frame axis>
+cix = 1
+ciy = 0
+ciz = 0
+cjx = 0
+cjy = np.cos(obliquity_rad)
+cjz = -np.sin(obliquity_rad)
+ckx = 0
+cky = np.sin(obliquity_rad)
+ckz = np.cos(obliquity_rad)
+
+# Test; assemble direction cosine matrix (dmc) to convert XYZ vector to IJK
+dcm = np.array([
+    [cix, ciy, ciz],
+    [cjx, cjy, cjz],
+    [ckx, cky, ckz]
+    ])
+
+# Test; create a XYZ vector to transform from first entry of Flora
+xyz = np.array([
+    [FloraEphemDict["ephemerisArray_FloraEarth"][0,1]], 
+    [FloraEphemDict["ephemerisArray_FloraEarth"][0,2]],
+    [FloraEphemDict["ephemerisArray_FloraEarth"][0,3]]
+    ])
+
+# Test; use numpy matrix multiply to move XYZ vector into IJK with DCM
+ijk = np.matmul(dcm,xyz)
+
+# Dec is angle between I and J components on IJ plane and K
+# find magnitude of I and J vector in IJ plane
+fe_projIJ = np.sqrt((ijk[0]**2) + (ijk[1]**2))
+# solve for declination
+Dec_fe_rad = np.arctan2(ijk[2],fe_projIJ)
+
+# RA is atan of I and J components in IJ plane
+RA_fe_rad = np.arctan2(ijk[1],ijk[0])
+
+# Covert from radians to degrees
+Dec_fe_deg = np.degrees(Dec_fe_rad)
+RA_fe_deg = np.degrees(RA_fe_rad)
+
+# Place breakpoint here for debugging to see all the above values
 danDebugTestPoint = 42
-# covnert from deg to hr/min/sec in deg 
